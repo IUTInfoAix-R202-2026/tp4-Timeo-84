@@ -53,6 +53,33 @@ public class QualificationViewModel {
     // 2. verdictGlobalLibelle : "Verdict global : (à saisir)" tant que le verdict
     //    du modèle est vide, sinon "Verdict global : <verdict>".
     //    Astuce : dépend de nuit.verdictGlobalProperty().
+    // 1. descriptionSelection
+    sequenceSelectionnee.addListener(
+        (obs, ancien, s) -> {
+          if (s == null) {
+            descriptionSelection.set("(sélectionnez une séquence dans le tableau)");
+          } else {
+            descriptionSelection.set(
+                "Séquence "
+                    + s.getHorodatage().format(HEURE)
+                    + " - "
+                    + String.format("%.1f", s.getFrequenceDominanteKHz())
+                    + " kHz");
+          }
+        });
+    descriptionSelection.set("(sélectionnez une séquence dans le tableau)"); // valeur initiale
+
+    // 2. verdictGlobalLibelle
+    nuit.verdictGlobalProperty()
+        .addListener(
+            (obs, ancien, v) -> {
+              if (v == null || v.isBlank()) {
+                verdictGlobalLibelle.set("Verdict global : (à saisir)");
+              } else {
+                verdictGlobalLibelle.set("Verdict global : " + v);
+              }
+            });
+    verdictGlobalLibelle.set("Verdict global : (à saisir)"); // valeur initiale
   }
 
   public ObservableList<Sequence> sequencesProperty() {
@@ -90,11 +117,18 @@ public class QualificationViewModel {
 
   /** Marque la séquence sélectionnée comme "Écoutée". */
   public void ecouterCommand() {
-    // TODO exercice 7 : si une séquence est sélectionnée, passer son statut à "Écoutée".
+    // TODO exercice 7 : si une séquence est sélectionnée, passer son statut à
+    // "Écoutée".
+    Sequence s = sequenceSelectionnee.get();
+    if (s != null) {
+      s.setStatut("Écoutée");
+    }
   }
 
   /** Enregistre le verdict saisi dans le modèle de la nuit. */
   public void enregistrerVerdictCommand() {
-    // TODO exercice 7 : recopier le verdict saisi dans le modèle (nuit.setVerdictGlobal).
+    // TODO exercice 7 : recopier le verdict saisi dans le modèle
+    // (nuit.setVerdictGlobal).
+    nuit.setVerdictGlobal(verdictSaisi.get());
   }
 }

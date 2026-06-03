@@ -3,7 +3,9 @@ package fr.univ_amu.iut.exercice7;
 import com.google.inject.Inject;
 import fr.nedjar.vigiechiro.audio.AudioView;
 import java.nio.file.Path;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
@@ -65,6 +67,40 @@ public class QualificationController {
     // 6. zoneCommentaire <-> commentaireProperty (bidirectionnel).
     // 7. choiceVerdict : items = viewModel.listeVerdicts(), valeur <-> verdictSaisiProperty.
     // 8. labelVerdictGlobal <- verdictGlobalLibelleProperty.
+    colHorodatage.setCellValueFactory(
+        cellData -> {
+          LocalTime horodatage = cellData.getValue().getHorodatage();
+          String heure = horodatage.format(DateTimeFormatter.ofPattern("HH:mm"));
+          return new SimpleStringProperty(heure);
+        });
+    colFrequence.setCellValueFactory(
+        cellData -> {
+          double freqHz = cellData.getValue().getFrequenceDominanteKHz();
+          String freqKHz = String.format("%.1f kHz", freqHz / 1000.0);
+          return new SimpleStringProperty(freqKHz);
+        });
+    colDuree.setCellValueFactory(
+        cellData -> {
+          double duree = cellData.getValue().getDureeSecondes();
+          String dureeStr = String.format("%.1f s", duree);
+          return new SimpleStringProperty(dureeStr);
+        });
+
+    colStatut.setCellValueFactory(
+        cellData -> {
+          String statut = cellData.getValue().getStatut();
+          return new SimpleStringProperty(statut);
+        });
+    tableSequences.setItems(viewModel.sequencesProperty());
+    viewModel
+        .sequenceSelectionneeProperty()
+        .bind(tableSequences.getSelectionModel().selectedItemProperty());
+    labelSelection.textProperty().bind(viewModel.descriptionSelectionProperty());
+    boutonEcouter.disableProperty().bind(viewModel.peutEcouterProperty().not());
+    zoneCommentaire.textProperty().bindBidirectional(viewModel.commentaireProperty());
+    choiceVerdict.getItems().setAll(viewModel.listeVerdicts());
+    choiceVerdict.valueProperty().bindBidirectional(viewModel.verdictSaisiProperty());
+    labelVerdictGlobal.textProperty().bind(viewModel.verdictGlobalLibelleProperty());
   }
 
   @FXML
@@ -88,7 +124,8 @@ public class QualificationController {
     try {
       audioView.setAudioFile(Path.of(getClass().getResource("/audio/" + ressource).toURI()));
     } catch (Exception e) {
-      // Ressource absente : on laisse le composant vide (cas non bloquant pour le TP).
+      // Ressource absente : on laisse le composant vide (cas non bloquant pour le
+      // TP).
     }
   }
 }
